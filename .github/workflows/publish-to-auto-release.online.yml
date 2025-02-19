@@ -62,6 +62,8 @@ jobs:
           echo "VERSION=$VERSION" >> $GITHUB_ENV
           echo "BUILD_NUMBER=$BUILD_NUMBER" >> $GITHUB_ENV
 
+      - name: Use Online Installer Config
+        run: copy src-tauri/tauri.online.json src-tauri/tauri.conf.json
 
       - uses: tauri-apps/tauri-action@v0
         env:

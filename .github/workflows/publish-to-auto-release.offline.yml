@@ -1,0 +1,60 @@
+name: "publish offline"
+
+on:
+  push:
+    branches:
+      - master
+
+# This is the example from the readme.
+# On each push to the `release` branch it will create or update a GitHub release, build your app, and upload the artifacts to the release.
+
+jobs:
+  publish-tauri:
+    permissions:
+      contents: write
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: "windows-latest"
+            args: ""
+
+    runs-on: ${{ matrix.platform }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: setup node
+        uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+
+      - name: install Rust stable
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Read version from JSON (Cross-Platform)
+        id: version
+        shell: bash
+        run: |
+          if [[ "$RUNNER_OS" == "Windows" ]]; then
+            VERSION=$(powershell -Command "(Get-Content src-tauri/web-dist/version.json | ConvertFrom-Json).version")
+            BUILD_NUMBER=$(powershell -Command "(Get-Content src-tauri/web-dist/version.json | ConvertFrom-Json).build_number")
+          else
+            VERSION=$(jq -r '.version' src-tauri/web-dist/version.json)
+            BUILD_NUMBER=$(jq -r '.build_number' src-tauri/web-dist/version.json)
+          fi
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+          echo "BUILD_NUMBER=$BUILD_NUMBER" >> $GITHUB_ENV
+
+      - name: Use Offline Installer Config
+        run: copy src-tauri/tauri.online.json src-tauri/tauri.conf.json          
+
+      - uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tagName: "app-v${{ env.VERSION }}-build-${{ env.BUILD_NUMBER }}"
+          releaseName: "App v${{ env.VERSION }} (Build ${{ env.BUILD_NUMBER }})"
+          releaseBody: "See the assets to download this version and install."
+          releaseDraft: true
+          prerelease: false
+          args: ${{ matrix.args }}
