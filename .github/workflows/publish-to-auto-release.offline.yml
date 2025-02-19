@@ -41,7 +41,11 @@ jobs:
           echo "BUILD_NUMBER=$BUILD_NUMBER" >> $GITHUB_ENV
 
       - name: Use Offline Installer Config (Windows)
-        run: copy src-tauri/tauri.offline.json src-tauri/tauri.conf.json
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          Copy-Item src-tauri/tauri.offline.json src-tauri/tauri.conf.json
+          (Get-Content src-tauri/tauri.conf.json) -replace '__VERSION_REPLACE_THIS__', "${{ env.VERSION }}" | Set-Content src-tauri/tauri.conf.json
 
       - uses: tauri-apps/tauri-action@v0
         env:
@@ -53,5 +57,3 @@ jobs:
           releaseDraft: true
           prerelease: false
           args: ${{ matrix.args }}
-          appVersion: ${{ env.VERSION }}
-          appBuild: ${{ env.BUILD_NUMBER }}          

@@ -64,12 +64,18 @@ jobs:
 
       - name: Use Online Installer Config (Windows)
         if: runner.os == 'Windows'
-        run: copy src-tauri/tauri.online.json src-tauri/tauri.conf.json
+        shell: pwsh
+        run: |
+          Copy-Item src-tauri/tauri.online.json src-tauri/tauri.conf.json
+          (Get-Content src-tauri/tauri.conf.json) -replace '__VERSION_REPLACE_THIS__', "${{ env.VERSION }}" | Set-Content src-tauri/tauri.conf.json
   
       - name: Use Online Installer Config (Linux/macOS)
         if: runner.os != 'Windows'
-        run: cp src-tauri/tauri.online.json src-tauri/tauri.conf.json
-
+        shell: bash
+        run: |
+          cp src-tauri/tauri.online.json src-tauri/tauri.conf.json
+          sed -i "s/__VERSION_REPLACE_THIS__/${{ env.VERSION }}/g" src-tauri/tauri.conf.json
+    
       - uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -80,5 +86,3 @@ jobs:
           releaseDraft: true
           prerelease: false
           args: ${{ matrix.args }}
-          appVersion: ${{ env.VERSION }}
-          appBuild: ${{ env.BUILD_NUMBER }}
