@@ -48,13 +48,20 @@ jobs:
         # webkitgtk 4.0 is for Tauri v1 - webkitgtk 4.1 is for Tauri v2.
         # You can remove the one that doesn't apply to your app to speed up the workflow a bit.
 
-      - name: Read version from JSON
+      - name: Read version from JSON (Cross-Platform)
         id: version
+        shell: bash
         run: |
-          VERSION=$(jq -r '.version' src-tauri/web-dist/version.json)
-          BUILD_NUMBER=$(jq -r '.build_number' src-tauri/web-dist/version.json)
+          if [[ "$RUNNER_OS" == "Windows" ]]; then
+            VERSION=$(powershell -Command "(Get-Content src-tauri/web-dist/version.json | ConvertFrom-Json).version")
+            BUILD_NUMBER=$(powershell -Command "(Get-Content src-tauri/web-dist/version.json | ConvertFrom-Json).build_number")
+          else
+            VERSION=$(jq -r '.version' src-tauri/web-dist/version.json)
+            BUILD_NUMBER=$(jq -r '.build_number' src-tauri/web-dist/version.json)
+          fi
           echo "VERSION=$VERSION" >> $GITHUB_ENV
           echo "BUILD_NUMBER=$BUILD_NUMBER" >> $GITHUB_ENV
+
 
       - uses: tauri-apps/tauri-action@v0
         env:
