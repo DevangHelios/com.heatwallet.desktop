@@ -35,24 +35,13 @@ jobs:
         id: version
         shell: bash
         run: |
-          if [[ "$RUNNER_OS" == "Windows" ]]; then
-            VERSION=$(powershell -Command "(Get-Content src-tauri/web-dist/version.json | ConvertFrom-Json).version")
-            BUILD_NUMBER=$(powershell -Command "(Get-Content src-tauri/web-dist/version.json | ConvertFrom-Json).build_number")
-          else
-            VERSION=$(jq -r '.version' src-tauri/web-dist/version.json)
-            BUILD_NUMBER=$(jq -r '.build_number' src-tauri/web-dist/version.json)
-          fi
+          VERSION=$(powershell -Command "(Get-Content src-tauri/web-dist/version.json | ConvertFrom-Json).version")
+          BUILD_NUMBER=$(powershell -Command "(Get-Content src-tauri/web-dist/version.json | ConvertFrom-Json).build_number")
           echo "VERSION=$VERSION" >> $GITHUB_ENV
           echo "BUILD_NUMBER=$BUILD_NUMBER" >> $GITHUB_ENV
 
-      - name: Use Offline Installer Config (Cross-Platform)
-        shell: bash
-        run: |
-          if [ "$RUNNER_OS" == "Windows" ]; then
-            copy src-tauri/tauri.offline.json src-tauri/tauri.conf.json
-          else
-            cp src-tauri/tauri.offline.json src-tauri/tauri.conf.json
-          fi
+      - name: Use Offline Installer Config (Windows)
+        run: copy src-tauri/tauri.offline.json src-tauri/tauri.conf.json
 
       - uses: tauri-apps/tauri-action@v0
         env:
