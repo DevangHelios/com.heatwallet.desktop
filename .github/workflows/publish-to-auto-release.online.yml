@@ -75,9 +75,9 @@ jobs:
         run: |
           cp src-tauri/tauri.online.json src-tauri/tauri.conf.json
           if [ "$(uname)" = "Darwin" ]; then
-            sed -i '' "s/__VERSION__/${{ env.VERSION }}/g" src-tauri/tauri.conf.json
+            sed -i '' "s/__VERSION_REPLACE_THIS__/${{ env.VERSION }}/g" src-tauri/tauri.conf.json
           else
-            sed -i "s/__VERSION__/${{ env.VERSION }}/g" src-tauri/tauri.conf.json
+            sed -i "s/__VERSION_REPLACE_THIS__/${{ env.VERSION }}/g" src-tauri/tauri.conf.json
           fi
     
       - uses: tauri-apps/tauri-action@v0
