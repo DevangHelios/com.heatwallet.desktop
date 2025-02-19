@@ -1,0 +1,39 @@
+[
+  {
+    "relation": [
+      "delegate_permission/common.handle_all_urls"
+    ],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.heatwallet.heat_app",
+      "sha256_cert_fingerprints": [
+        "04:03:43:9B:2C:CF:F5:5A:00:42:C3:27:01:0B:62:B0:72:CA:4D:72:E1:49:31:0B:E7:9A:E3:5E:EE:B9:9D:5D",
+        "E2:B0:DD:E8:5A:67:FB:85:17:8C:FE:EC:74:AD:7B:E4:8E:26:78:C4:31:76:FC:D2:2A:FB:42:D0:44:08:AC:97"
+      ]
+    }
+  },
+  {
+    "relation": [
+      "delegate_permission/common.handle_all_urls"
+    ],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.heatwallet.heat_app",
+      "sha256_cert_fingerprints": [
+        "15:A2:51:66:9C:23:BE:E6:F4:A3:33:4D:FC:AD:11:96:4C:22:52:F6:F3:CD:CC:0B:45:53:5D:6D:6D:38:A0:81"
+      ]
+    }
+  },
+  {
+    "relation": [
+      "delegate_permission/common.handle_all_urls"
+    ],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.heatwallet.heat_app",
+      "sha256_cert_fingerprints": [
+        "B7:4C:09:5D:3D:C2:CC:EB:D2:9F:27:A6:43:F0:92:2E:3E:38:69:EE:17:0A:5F:D6:B9:3B:A0:10:F2:A0:57:CF"
+      ]
+    }
+  }
+]

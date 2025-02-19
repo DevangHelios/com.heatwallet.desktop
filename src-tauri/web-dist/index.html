@@ -1,38 +1,241 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Trial Tauri App</title>
-  <style>
-    body {
-      margin: 0;
-      padding: 0;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      min-height: 100vh;
-      background-color: #f7f7f7;
-    }
-    .container {
-      text-align: center;
-      padding: 20px;
-    }
-    h1 {
-      font-size: 2.5rem;
-      margin-bottom: 0.5rem;
-    }
-    p {
-      font-size: 1.25rem;
-      color: #555;
-    }
-  </style>
-</head>
-<body>
-  <div class="container">
-    <h1>Welcome to Our Trial Tauri App</h1>
-    <p>This is the landing page of our trial Tauri app.</p>
-  </div>
-</body>
+<html lang="en" class="notranslate" translate="no">
+  <head>
+    <base href="/" />
+
+    <meta charset="UTF-8" />
+    <meta content="IE=Edge" http-equiv="X-UA-Compatible" />
+    <meta name="description" content="Crypto Wallet Communicator" />
+
+    <!-- iOS meta tags & icons -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+    <meta
+      name="apple-mobile-web-app-title"
+      content="Heat Wallet"
+    />
+    <link
+      rel="apple-touch-icon"
+      href="icons/Icon-192.png?v=05pqe"
+    />
+
+    <!-- Favicon -->
+    <link
+      rel="icon"
+      type="image/png"
+      href="favicon.png?v=05pqe"
+    />
+
+    <title>Heat Wallet</title>
+    <style>
+      body {
+        background-color: #f2f5f3;
+      }
+    </style>
+    <link
+      rel="manifest"
+      href="manifest.json?v=05pqe"
+    />
+    <script>
+      /* Catch the beforeinstallprompt event on android so it can be shown AFTER the user clicked the COPY button */
+      window.__deferredInstallPrompt__ = null;
+
+      window.addEventListener("beforeinstallprompt", (e) => {
+        // Prevent the mini-infobar from appearing on mobile
+        e.preventDefault();
+        // Save the event so it can be triggered later.
+        window.__deferredInstallPrompt__ = e;
+        // Optionally, update UI to inform the user they can add to home screen
+      });
+
+      window.__showDeferredInstallPrompt__ = () => {
+        if (window.__deferredInstallPrompt__) {
+          window.__deferredInstallPrompt__.prompt();
+        }
+      };
+
+      /// JSEngineService relies on this method being here for usage in PWA paste actions.
+      window.__readClipboardData__ = () => {
+        return new Promise((resolve) => {
+          navigator.clipboard
+            .readText()
+            .then((text) => {
+              resolve(`${text}`);
+            })
+            .catch((error) => {
+              console.error("Failed to read from the clipboard:", error);
+              resolve(null);
+            });
+        });
+      };
+
+      window.__pwaAppInstalled__ = false;
+      window.addEventListener('appinstalled', (event) => {
+        window.__pwaAppInstalled__ = true;
+      });
+      window.__getPwaAppInstalled__ = () => window.__pwaAppInstalled__;
+    </script>
+    <script>
+      /* Prevent app to break on reload */
+      window.location.hash = "";
+      /* Provide cache buster to js loader to bust its cache as well */
+      window.jsLoaderCacheBuster = "05pqe";
+    </script>
+    <script>
+      /* We manually control firebase injected scripts */
+      window.flutterfire_ignore_scripts = ['core', 'messaging'];
+    </script>
+    <!-- This script adds the flutter initialization JS code -->
+    <script src="flutter.js?v=05pqe" defer></script>
+  </head>
+  <body>
+    <div id="loading">
+      <style>
+        body {
+          inset: 0;
+          overflow: hidden;
+          margin: 0;
+          padding: 0;
+          position: fixed;
+        }
+        #loading {
+          align-items: center;
+          display: flex;
+          flex-direction: column; /* Adjust the flex direction */
+          height: 100%;
+          justify-content: center;
+          width: 100%;
+        }
+        #loading img {
+          animation: 1s ease-in-out 0s infinite alternate breathe;
+          opacity: 0.66;
+          transition: opacity 0.4s;
+        }
+        #loading.main_done img {
+          opacity: 1;
+        }
+        #loading.init_done img {
+          animation: 0.33s ease-in-out 0s 1 forwards zooooom;
+          opacity: 0.05;
+        }
+        @keyframes breathe {
+          from {
+            transform: scale(1);
+          }
+          to {
+            transform: scale(0.8);
+          }
+        }
+        @keyframes zooooom {
+          from {
+            transform: scale(1);
+          }
+          to {
+            transform: scale(10);
+          }
+        }
+        #loading span {
+          /* or #loading p if you choose <p> */
+          margin-top: 20px; /* Adjust spacing between the image and the text */
+          text-align: center; /* Ensure the text is centered */
+          font-size: 40px; /* Optional: Adjust the font size as needed */
+        }
+      </style>
+      <img
+        src="icons/Icon-192.png?v=05pqe"
+        alt="Loading indicator..."
+      />
+      <span style="font-family: Verdana, Arial, 'Helvetica Neue', Helvetica, sans-serif; font-size: 18px;">Loading app contents ...</span>
+    </div>
+    <script type="module">
+      import * as core from "./firebasejs/firebase-app.js";
+      import * as messaging from "./firebasejs/firebase-messaging.js";
+
+      window["firebase_core"] = core;
+      window["firebase_messaging"] = messaging;
+
+      window.flutterfire_ignore_scripts = ["core", "messaging"];
+    </script>
+    <script>
+      const serviceWorkerVersion = '"782546333"'.match(/\d+/)?.[0] || ''
+    </script>
+    <script>
+      window.addEventListener("load", async function () {
+        var loading = document.querySelector("#loading");
+        _flutter.loader
+          .loadEntrypoint({
+            serviceWorker: {
+              serviceWorkerVersion,
+            },
+            entrypointUrl: "main.dart.js?v=05pqe",
+          })
+          .then(function (engineInitializer) {
+            loading.classList.add("main_done");
+            return engineInitializer.initializeEngine({
+              useColorEmoji: true,
+            });
+          })
+          .then(function (appRunner) {
+            loading.classList.add("init_done");
+            return appRunner.runApp();
+          })
+          .then(function (app) {
+            // Wait a few milliseconds so users can see the "zoooom" animation
+            // before getting rid of the "loading" div.
+            window.setTimeout(function () {
+              loading.remove();
+            }, 200);
+          })
+          /*.then(function () {
+            var s = document.createElement("script");
+            s.setAttribute("src", "https://unpkg.com/@zxing/library@0.20.0/umd/index.min.js");
+            document.body.appendChild(s);
+          })*/
+          /*.then(function () {
+            var s = document.createElement("script");
+            s.setAttribute(
+              "src",
+              "jsQR.min.js?v=05pqe"
+            );
+            document.body.appendChild(s);
+          })*/
+          /*.then(function () {
+            var s = document.createElement("script");
+            s.setAttribute(
+              "src",
+              "zxing.js?v=05pqe"
+            );
+            s.setAttribute(
+              "id",
+              "mobile-scanner-barcode-reader"
+            );
+            document.body.appendChild(s);
+          });*/
+      });
+    </script>
+    <script src="index.js?v=05pqe" defer></script>
+    <iframe
+    id="sandbox-frame"
+    sandbox="allow-scripts"
+    style="display: none;"
+    srcdoc="
+      <!DOCTYPE html>
+      <html>
+        <body>
+          <script type='text/javascript'>
+            window.addEventListener('message', async function (event) {
+              const { id, code } = event.data;
+              try {
+                const result = await eval(code);
+                event.source.postMessage({ result, id }, event.origin);
+              } catch (error) {
+                event.source.postMessage({ error, id }, event.origin);
+              }
+            });
+          </script>
+        </body>
+      </html>
+    ">
+  </iframe>    
+  </body>
 </html>
