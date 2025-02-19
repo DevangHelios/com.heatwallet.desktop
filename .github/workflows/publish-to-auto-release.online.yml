@@ -62,8 +62,14 @@ jobs:
           echo "VERSION=$VERSION" >> $GITHUB_ENV
           echo "BUILD_NUMBER=$BUILD_NUMBER" >> $GITHUB_ENV
 
-      - name: Use Online Installer Config
-        run: copy src-tauri/tauri.online.json src-tauri/tauri.conf.json
+      - name: Use Online Installer Config (Cross-Platform)
+        shell: bash
+        run: |
+          if [ "$RUNNER_OS" == "Windows" ]; then
+            copy src-tauri/tauri.online.json src-tauri/tauri.conf.json
+          else
+            cp src-tauri/tauri.online.json src-tauri/tauri.conf.json
+          fi
 
       - uses: tauri-apps/tauri-action@v0
         env:

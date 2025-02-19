@@ -1,6 +1,6 @@
 {
   "$schema": "https://schema.tauri.app/config/2.0.0-rc",
-  "productName": "Heat Wallet",
+  "productName": "Heat Wallet Offline",
   "version": "0.1.0",
   "identifier": "com.heatwallet.desktop",
   "build": {
