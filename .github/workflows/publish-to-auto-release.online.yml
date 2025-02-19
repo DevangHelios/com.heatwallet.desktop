@@ -80,3 +80,5 @@ jobs:
           releaseDraft: true
           prerelease: false
           args: ${{ matrix.args }}
+          appVersion: ${{ env.VERSION }}
+          appBuild: ${{ env.BUILD_NUMBER }}
