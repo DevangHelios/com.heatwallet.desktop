@@ -1,219 +1,189 @@
 <!DOCTYPE html>
 <html lang="en" class="notranslate" translate="no">
-  <head>
+<head>
     <base href="/" />
-
     <meta charset="UTF-8" />
-    <meta content="IE=Edge" http-equiv="X-UA-Compatible" />
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta name="description" content="Crypto Wallet Communicator" />
-
-    <!-- iOS meta tags & icons -->
-    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    
+    <!-- Updated meta tag -->
+    <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black" />
-    <meta
-      name="apple-mobile-web-app-title"
-      content="Heat Wallet"
-    />
-    <link
-      rel="apple-touch-icon"
-      href="icons/Icon-192.png?v=72nag"
-    />
+    <meta name="apple-mobile-web-app-title" content="Heat Wallet" />
+    <link rel="apple-touch-icon" href="icons/Icon-192.png?v=44kao" />
 
     <!-- Favicon -->
-    <link
-      rel="icon"
-      type="image/png"
-      href="favicon.png?v=72nag"
-    />
+    <link rel="icon" type="image/png" href="favicon.png?v=44kao" />
+    
+    <!-- Modern Web Manifest -->
+    <link rel="manifest" href="manifest.json?v=44kao" crossorigin="use-credentials" />
 
     <title>Heat Wallet</title>
+    
     <style>
-      body {
-        background-color: #f2f5f3;
-      }
-    </style>
-    <link
-      rel="manifest"
-      href="manifest.json?v=72nag"
-    />
-    <script>
-      /* Catch the beforeinstallprompt event on android so it can be shown AFTER the user clicked the COPY button */
-      window.__deferredInstallPrompt__ = null;
-
-      window.addEventListener("beforeinstallprompt", (e) => {
-        // Prevent the mini-infobar from appearing on mobile
-        e.preventDefault();
-        // Save the event so it can be triggered later.
-        window.__deferredInstallPrompt__ = e;
-        // Optionally, update UI to inform the user they can add to home screen
-      });
-
-      window.__showDeferredInstallPrompt__ = () => {
-        if (window.__deferredInstallPrompt__) {
-          window.__deferredInstallPrompt__.prompt();
+        :root {
+            --background-color: #f2f5f3;
+            --loader-opacity: 0.66;
         }
-      };
 
-      /// JSEngineService relies on this method being here for usage in PWA paste actions.
-      window.__readClipboardData__ = () => {
-        return new Promise((resolve) => {
-          navigator.clipboard
-            .readText()
-            .then((text) => {
-              resolve(`${text}`);
-            })
-            .catch((error) => {
-              console.error("Failed to read from the clipboard:", error);
-              resolve(null);
-            });
-        });
-      };
-
-      window.__pwaAppInstalled__ = false;
-      window.addEventListener('appinstalled', (event) => {
-        window.__pwaAppInstalled__ = true;
-      });
-      window.__getPwaAppInstalled__ = () => window.__pwaAppInstalled__;
-    </script>
-    <script>
-      /* Prevent app to break on reload */
-      window.location.hash = "";
-      /* Provide cache buster to js loader to bust its cache as well */
-      window.jsLoaderCacheBuster = "72nag";
-    </script>
-    <script>
-      /* We manually control firebase injected scripts */
-      window.flutterfire_ignore_scripts = ['core', 'messaging'];
-    </script>
-    <!-- This script adds the flutter initialization JS code -->
-    <script src="flutter.js?v=72nag" defer></script>
-  </head>
-  <body>
-    <div id="loading">
-      <style>
         body {
-          inset: 0;
-          overflow: hidden;
-          margin: 0;
-          padding: 0;
-          position: fixed;
+            background-color: var(--background-color);
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
         }
-        #loading {
-          align-items: center;
-          display: flex;
-          flex-direction: column; /* Adjust the flex direction */
-          height: 100%;
-          justify-content: center;
-          width: 100%;
-        }
-        #loading img {
-          animation: 1s ease-in-out 0s infinite alternate breathe;
-          opacity: 0.66;
-          transition: opacity 0.4s;
-        }
-        #loading.main_done img {
-          opacity: 1;
-        }
-        #loading.init_done img {
-          animation: 0.33s ease-in-out 0s 1 forwards zooooom;
-          opacity: 0.05;
-        }
-        @keyframes breathe {
-          from {
-            transform: scale(1);
-          }
-          to {
-            transform: scale(0.8);
-          }
-        }
-        @keyframes zooooom {
-          from {
-            transform: scale(1);
-          }
-          to {
-            transform: scale(10);
-          }
-        }
-        #loading span {
-          /* or #loading p if you choose <p> */
-          margin-top: 20px; /* Adjust spacing between the image and the text */
-          text-align: center; /* Ensure the text is centered */
-          font-size: 40px; /* Optional: Adjust the font size as needed */
-        }
-      </style>
-      <img
-        src="icons/Icon-192.png?v=72nag"
-        alt="Loading indicator..."
-      />
-      <span style="font-family: Verdana, Arial, 'Helvetica Neue', Helvetica, sans-serif; font-size: 18px;">Loading app contents ...</span>
+    </style>
+
+    <!-- Preload with crossorigin -->
+    <link rel="preload" href="flutter_bootstrap.js?v=44kao" as="script" crossorigin="anonymous" />
+    <link rel="preload" href="icons/Icon-192.png?v=44kao" as="image" crossorigin="anonymous" />
+</head>
+<body>
+    <div id="loading" role="status" aria-label="Loading application">
+        <style>
+            #loading {
+                position: fixed;
+                inset: 0;
+                display: grid;
+                place-items: center;
+                pointer-events: none;
+                transition: opacity 0.3s ease-out;
+            }
+
+            #loading picture img {
+                animation: breathe 1s ease-in-out infinite alternate;
+                opacity: var(--loader-opacity);
+                max-width: 192px;
+                will-change: transform, opacity;
+            }
+
+            #loading.main_done picture img {
+                opacity: 1;
+            }
+
+            #loading.init_done picture img {
+                animation: zooooom 0.33s ease-in-out forwards;
+                opacity: 0.05;
+            }
+
+            #loading span {
+                margin-top: 1.25rem;
+                font-family: Verdana, Arial, 'Helvetica Neue', Helvetica, sans-serif;
+                font-size: 1.125rem;
+                color: #333;
+                text-align: center;
+            }
+
+            @keyframes breathe {
+                from { transform: scale(1); }
+                to { transform: scale(0.8); }
+            }
+
+            @keyframes zooooom {
+                from { transform: scale(1); }
+                to { transform: scale(10); }
+            }
+
+            @media (prefers-reduced-motion: reduce) {
+                #loading picture img {
+                    animation: none;
+                }
+            }
+        </style>
+        <picture>
+            <img src="icons/Icon-192.png?v=44kao" alt="Loading indicator" loading="eager" />
+        </picture>
+        <span>Loading app contents...</span>
     </div>
+
+    <!-- Core Scripts -->
     <script type="module">
-      import * as core from "./firebasejs/firebase-app.js";
-      import * as messaging from "./firebasejs/firebase-messaging.js";
+        // PWA Installation Handling
+        window.__deferredInstallPrompt__ = null;
+        window.addEventListener("beforeinstallprompt", (e) => {
+            e.preventDefault();
+            window.__deferredInstallPrompt__ = e;
+        });
 
-      window["firebase_core"] = core;
-      window["firebase_messaging"] = messaging;
+        window.__showDeferredInstallPrompt__ = async () => {
+            if (window.__deferredInstallPrompt__) {
+                await window.__deferredInstallPrompt__.prompt();
+                return window.__deferredInstallPrompt__.userChoice;
+            }
+        };
 
-      window.flutterfire_ignore_scripts = ["core", "messaging"];
+        // Clipboard API
+        window.__readClipboardData__ = async () => {
+            try {
+                return await navigator.clipboard.readText();
+            } catch (error) {
+                console.error("Clipboard read failed:", error);
+                return null;
+            }
+        };
+
+        // PWA Installation Status
+        window.__pwaAppInstalled__ = false;
+        window.addEventListener('appinstalled', () => {
+            window.__pwaAppInstalled__ = true;
+        });
+        window.__getPwaAppInstalled__ = () => window.__pwaAppInstalled__;
+
+        // Firebase Setup
+        import * as core from "./firebasejs/firebase-app.js";
+        import * as messaging from "./firebasejs/firebase-messaging.js";
+        window["firebase_core"] = core;
+        window["firebase_messaging"] = messaging;
+        window.flutterfire_ignore_scripts = ["core", "messaging"];
     </script>
-    <script>
-      const serviceWorkerVersion = '"1109229565"'.match(/\d+/)?.[0] || ''
+
+    <!-- Flutter Bootstrap with Custom CanvasKit -->
+    <script type="module">
+        (()=>{var L=()=>navigator.vendor==="Google Inc."||navigator.agent==="Edg/",E=()=>typeof ImageDecoder>"u"?!1:L(),P=()=>typeof Intl.v8BreakIterator<"u"&&typeof Intl.Segmenter<"u",W=()=>{let a=[0,97,115,109,1,0,0,0,1,5,1,95,1,120,0];return WebAssembly.validate(new Uint8Array(a))},w={hasImageCodecs:E(),hasChromiumBreakIterators:P(),supportsWasmGC:W(),crossOriginIsolated:window.crossOriginIsolated};function d(...a){return new URL(_(...a),document.baseURI).toString()}function _(...a){return a.filter(t=>!!t).map((t,i)=>i===0?S(t):j(S(t))).filter(t=>t.length).join("/")}function j(a){let t=0;for(;t<a.length&&a.charAt(t)==="/";)t++;return a.substring(t)}function S(a){let t=a.length;for(;t>0&&a.charAt(t-1)==="/";)t--;return a.substring(0,t)}function T(a,t){return a.canvasKitBaseUrl?a.canvasKitBaseUrl:t.engineRevision&&!t.useLocalCanvasKit?_("https://www.gstatic.com/flutter-canvaskit",t.engineRevision):"canvaskit"}var v=class{constructor(){this._scriptLoaded=!1}setTrustedTypesPolicy(t){this._ttPolicy=t}async loadEntrypoint(t){let{entrypointUrl:i=d("main.dart.js"),onEntrypointLoaded:r,nonce:e}=t||{};return this._loadJSEntrypoint(i,r,e)}async load(t,i,r,e,n){n??=o=>{o.initializeEngine(r).then(l=>l.runApp())};let{entryPointBaseUrl:s}=r;if(t.compileTarget==="dart2wasm")return this._loadWasmEntrypoint(t,i,s,n);{let o=t.mainJsPath??"main.dart.js",l=d(s,o);return this._loadJSEntrypoint(l,n,e)}}didCreateEngineInitializer(t){typeof this._didCreateEngineInitializerResolve=="function"&&(this._didCreateEngineInitializerResolve(t),this._didCreateEngineInitializerResolve=null,delete _flutter.loader.didCreateEngineInitializer),typeof this._onEntrypointLoaded=="function"&&this._onEntrypointLoaded(t)}_loadJSEntrypoint(t,i,r){let e=typeof i=="function";if(!this._scriptLoaded){this._scriptLoaded=!0;let n=this._createScriptTag(t,r);if(e)console.debug("Injecting <script> tag. Using callback."),this._onEntrypointLoaded=i,document.head.append(n);else return new Promise((s,o)=>{console.debug("Injecting <script> tag. Using Promises. Use the callback approach instead!"),this._didCreateEngineInitializerResolve=s,n.addEventListener("error",o),document.head.append(n)})}}async _loadWasmEntrypoint(t,i,r,e){if(!this._scriptLoaded){this._scriptLoaded=!0,this._onEntrypointLoaded=e;let{mainWasmPath:n,jsSupportRuntimePath:s}=t,o=d(r,n),l=d(r,s);this._ttPolicy!=null&&(l=this._ttPolicy.createScriptURL(l));let c=(await import(l)).compileStreaming(fetch(o)),f;t.renderer==="skwasm"?f=(async()=>{let m=await i.skwasm;return window._flutter_skwasmInstance=m,{skwasm:m.wasmExports,skwasmWrapper:m,ffi:{memory:m.wasmMemory}}})():f=Promise.resolve({}),await(await(await c).instantiate(await f)).invokeMain()}}_createScriptTag(t,i){let r=document.createElement("script");r.type="application/javascript",i&&(r.nonce=i);let e=t;return this._ttPolicy!=null&&(e=this._ttPolicy.createScriptURL(t)),r.src=e,r}};async function b(a,t,i){if(t<0)return a;let r,e=new Promise((n,s)=>{r=setTimeout(()=>{s(new Error(`${i} took more than ${t}ms to resolve. Moving on.`,{cause:b}))},t)});return Promise.race([a,e]).finally(()=>{clearTimeout(r)})}var y=class{setTrustedTypesPolicy(t){this._ttPolicy=t}loadServiceWorker(t){if(!t)return console.debug("Null serviceWorker configuration. Skipping."),Promise.resolve();if(!("serviceWorker"in navigator)){let o="Service Worker API unavailable.";return window.isSecureContext||(o+=`
+The current context is NOT secure.`,o+=`
+Read more: https://developer.mozilla.org/en-US/docs/Web/Security/Secure_Contexts`),Promise.reject(new Error(o))}let{serviceWorkerVersion:i,serviceWorkerUrl:r=d(`flutter_service_worker.js?v=${i}`),timeoutMillis:e=4e3}=t,n=r;this._ttPolicy!=null&&(n=this._ttPolicy.createScriptURL(n));let s=navigator.serviceWorker.register(n).then(o=>this._getNewServiceWorker(o,i)).then(this._waitForServiceWorkerActivation);return b(s,e,"prepareServiceWorker")}async _getNewServiceWorker(t,i){if(!t.active&&(t.installing||t.waiting))return console.debug("Installing/Activating first service worker."),t.installing||t.waiting;if(t.active.scriptURL.endsWith(i))return console.debug("Loading from existing service worker."),t.active;{let r=await t.update();return console.debug("Updating service worker."),r.installing||r.waiting||r.active}}async _waitForServiceWorkerActivation(t){if(!t||t.state==="activated")if(t){console.debug("Service worker already active.");return}else throw new Error("Cannot activate a null service worker!");return new Promise((i,r)=>{t.addEventListener("statechange",()=>{t.state==="activated"&&(console.debug("Activated new service worker."),i())})})}};var g=class{constructor(t,i="flutter-js"){let r=t||[/\.js$/,/\.mjs$/];window.trustedTypes&&(this.policy=trustedTypes.createPolicy(i,{createScriptURL:function(e){if(e.startsWith("blob:"))return e;let n=new URL(e,window.location),s=n.pathname.split("/").pop();if(r.some(l=>l.test(s)))return n.toString();console.error("URL rejected by TrustedTypes policy",i,":",e,"(download prevented)")}}))}};var k=a=>{let t=WebAssembly.compileStreaming(fetch(a));return(i,r)=>((async()=>{let e=await t,n=await WebAssembly.instantiate(e,i);r(n,e)})(),{})};var I=(a,t,i,r)=>(window.flutterCanvasKitLoaded=(async()=>{if(window.flutterCanvasKit)return window.flutterCanvasKit;let e=i.hasChromiumBreakIterators&&i.hasImageCodecs;if(!e&&t.canvasKitVariant=="chromium")throw"Chromium CanvasKit variant specifically requested, but unsupported in this browser";let n=e&&t.canvasKitVariant!=="full",s=r;n&&(s=d(s,"chromium"));let o=d(s,"canvaskit.js");a.flutterTT.policy&&(o=a.flutterTT.policy.createScriptURL(o));let l=k(d(s,"canvaskit.wasm")),p=await import(o);return window.flutterCanvasKit=await p.default({instantiateWasm:l}),window.flutterCanvasKit})(),window.flutterCanvasKitLoaded);var U=async(a,t,i,r)=>{let e=d(r,"skwasm.js"),n=e;a.flutterTT.policy&&(n=a.flutterTT.policy.createScriptURL(n));let s=k(d(r,"skwasm.wasm"));return await(await import(n)).default({instantiateWasm:s,locateFile:(l,p)=>{let c=p+l;return c.endsWith(".worker.js")?URL.createObjectURL(new Blob([`importScripts('${c}');`],{type:"application/javascript"})):c},mainScriptUrlOrBlob:e})};var C=class{async loadEntrypoint(t){let{serviceWorker:i,...r}=t||{},e=new g,n=new y;n.setTrustedTypesPolicy(e.policy),await n.loadServiceWorker(i).catch(o=>{console.warn("Exception while loading service worker:",o)});let s=new v;return s.setTrustedTypesPolicy(e.policy),this.didCreateEngineInitializer=s.didCreateEngineInitializer.bind(s),s.loadEntrypoint(r)}async load({serviceWorkerSettings:t,onEntrypointLoaded:i,nonce:r,config:e}={}){e??={};let n=_flutter.buildConfig;if(!n)throw"FlutterLoader.load requires _flutter.buildConfig to be set";let s=u=>{switch(u){case"skwasm":return w.crossOriginIsolated&&w.hasChromiumBreakIterators&&w.hasImageCodecs&&w.supportsWasmGC;default:return!0}},o=(u,m)=>{switch(u.renderer){case"auto":return m=="canvaskit"||m=="html";default:return u.renderer==m}},l=u=>u.compileTarget==="dart2wasm"&&!w.supportsWasmGC||e.renderer&&!o(u,e.renderer)?!1:s(u.renderer),p=n.builds.find(l);if(!p)throw"FlutterLoader could not find a build compatible with configuration and environment.";let c={};c.flutterTT=new g,t&&(c.serviceWorkerLoader=new y,c.serviceWorkerLoader.setTrustedTypesPolicy(c.flutterTT.policy),await c.serviceWorkerLoader.loadServiceWorker(t).catch(u=>{console.warn("Exception while loading service worker:",u)}));let f=T(e,n);p.renderer==="canvaskit"?c.canvasKit=I(c,e,w,f):p.renderer==="skwasm"&&(c.skwasm=U(c,e,w,f));let h=new v;return h.setTrustedTypesPolicy(c.flutterTT.policy),this.didCreateEngineInitializer=h.didCreateEngineInitializer.bind(h),h.load(p,c,e,r,i)}};window._flutter||(window._flutter={});window._flutter.loader||(window._flutter.loader=new C);})();
+//# sourceMappingURL=flutter.js.map
+
+        if (!window._flutter) {
+  window._flutter = {};
+}
+_flutter.buildConfig = {"engineRevision":"e672b006cb34c921db85b8e2f482ed3144a4574b","builds":[{"compileTarget":"dart2js","renderer":"canvaskit","mainJsPath":"main.dart.js"}]};
+
+
+        window.addEventListener("load", async () => {
+            const loading = document.querySelector("#loading");
+            const serviceWorkerVersion = '"2356466854"'.match(/\d+/)?.[0] || '';
+
+            try {
+                const engineInitializer = await _flutter.loader.load({
+                    config: {
+                        canvasKitBaseUrl: "./canvaskit/", // Local CanvasKit folder
+                        renderer: "canvaskit"
+                    },
+                    serviceWorker: { serviceWorkerVersion },
+                    onEntrypointLoaded: async (engineInitializer) => {
+                        loading.classList.add("main_done");
+                        const appRunner = await engineInitializer.initializeEngine({
+                            useColorEmoji: true
+                        });
+                        loading.classList.add("init_done");
+                        await appRunner.runApp();
+                        // Cleanup with animation
+                        setTimeout(() => {
+                            loading.style.opacity = '0';
+                            setTimeout(() => loading.remove(), 300);
+                        }, 200);
+                    }
+                });
+            } catch (error) {
+                console.error("Flutter initialization failed:", error);
+                loading.innerHTML = '<span style="color: #d32f2f">Failed to load application</span>';
+            }
+        });
     </script>
-    <script>
-      window.addEventListener("load", async function () {
-        var loading = document.querySelector("#loading");
-        _flutter.loader
-          .loadEntrypoint({
-            serviceWorker: {
-              serviceWorkerVersion,
-            },
-            entrypointUrl: "main.dart.js?v=72nag",
-          })
-          .then(function (engineInitializer) {
-            loading.classList.add("main_done");
-            return engineInitializer.initializeEngine({
-              useColorEmoji: true,
-            });
-          })
-          .then(function (appRunner) {
-            loading.classList.add("init_done");
-            return appRunner.runApp();
-          })
-          .then(function (app) {
-            // Wait a few milliseconds so users can see the "zoooom" animation
-            // before getting rid of the "loading" div.
-            window.setTimeout(function () {
-              loading.remove();
-            }, 200);
-          })
-          /*.then(function () {
-            var s = document.createElement("script");
-            s.setAttribute("src", "https://unpkg.com/@zxing/library@0.20.0/umd/index.min.js");
-            document.body.appendChild(s);
-          })*/
-          /*.then(function () {
-            var s = document.createElement("script");
-            s.setAttribute(
-              "src",
-              "jsQR.min.js?v=72nag"
-            );
-            document.body.appendChild(s);
-          })*/
-          /*.then(function () {
-            var s = document.createElement("script");
-            s.setAttribute(
-              "src",
-              "zxing.js?v=72nag"
-            );
-            s.setAttribute(
-              "id",
-              "mobile-scanner-barcode-reader"
-            );
-            document.body.appendChild(s);
-          });*/
-      });
-    </script>
-    <script src="index.js?v=72nag" defer></script>
+
+    <script src="index.js?v=44kao" type="module" defer></script>
     <iframe
     id="sandbox-frame"
     sandbox="allow-scripts"
@@ -236,6 +206,6 @@
         </body>
       </html>
     ">
-  </iframe>    
-  </body>
+  </iframe>
+</body>
 </html>
