@@ -23,6 +23,7 @@
   "bundle": {
     "active": true,
     "targets": ["deb", "rpm", "appimage", "msi", "dmg"],
+    "resources": ["web-dist/**/*"],
     "windows": {
       "webviewInstallMode": {
         "type": "embedBootstrapper"
