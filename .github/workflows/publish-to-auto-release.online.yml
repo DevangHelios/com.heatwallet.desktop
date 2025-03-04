@@ -80,26 +80,6 @@ jobs:
             sed -i "s/__VERSION_REPLACE_THIS__/${{ env.VERSION }}/g" src-tauri/tauri.conf.json
           fi
 
-      - name: Import Apple Certificate
-        if: matrix.platform == 'macos-latest'
-        run: |
-          echo "$APPLE_CERTIFICATE" | base64 --decode > certificate.p12
-          
-          security create-keychain -p "$KEYCHAIN_PASSWORD" build.keychain
-          security default-keychain -s build.keychain
-          security unlock-keychain -p "$KEYCHAIN_PASSWORD" build.keychain
-          
-          security import certificate.p12 -k build.keychain -P "$APPLE_CERTIFICATE_PASSWORD" -T /usr/bin/codesign
-          security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$KEYCHAIN_PASSWORD" build.keychain
-          
-          security find-identity -v -p codesigning build.keychain
-    
-      - name: List Certificates in Keychain
-        if: matrix.platform == 'macos-latest'
-        run: |
-          echo "Available identities in build.keychain:"
-          security find-identity -v -p codesigning build.keychain
-
       - uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
