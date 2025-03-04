@@ -79,42 +79,6 @@ jobs:
           else
             sed -i "s/__VERSION_REPLACE_THIS__/${{ env.VERSION }}/g" src-tauri/tauri.conf.json
           fi
-
-      - name: Import macOS certificates for signing (macOS only)
-        if: matrix.platform == 'macos-latest'
-        env:
-          APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
-          APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
-          KEYCHAIN_PASSWORD: ${{ secrets.KEYCHAIN_PASSWORD }}
-        run: |
-          echo $APPLE_CERTIFICATE | base64 --decode > certificate.p12
-          security create-keychain -p "$KEYCHAIN_PASSWORD" build.keychain
-          security default-keychain -s build.keychain
-          security unlock-keychain -p "$KEYCHAIN_PASSWORD" build.keychain
-          security import certificate.p12 -k build.keychain -P "$APPLE_CERTIFICATE_PASSWORD" -T /usr/bin/codesign
-          security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$KEYCHAIN_PASSWORD" build.keychain
-          security find-identity -v -p codesigning build.keychain
-
-      - name: Verify Certificate
-        if: matrix.platform == 'macos-latest'
-        run: |
-          echo "Listing keychains..."
-          security list-keychains
-
-          echo "Checking identities in build.keychain..."
-          security find-identity -v -p codesigning build.keychain || { echo "No identities found."; exit 1; }
-
-          echo "Extracting Apple Development certificate..."
-          CERT_INFO=$(security find-identity -v -p codesigning build.keychain | grep "Apple Development" || true)
-          if [ -z "$CERT_INFO" ]; then
-            echo "Error: No 'Apple Development' certificate found in build.keychain."
-            exit 1
-          fi
-
-
-          CERT_ID=$(echo "$CERT_INFO" | awk '{print $2}')
-          echo "CERT_ID=$CERT_ID" >> $GITHUB_ENV
-          echo "Certificate imported and verified: $CERT_ID"
     
       - uses: tauri-apps/tauri-action@v0
         env:
