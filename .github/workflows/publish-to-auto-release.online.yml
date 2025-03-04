@@ -83,20 +83,15 @@ jobs:
       - name: Import Apple Certificate
         if: matrix.platform == 'macos-latest'
         run: |
-          # Decode the certificate
           echo "$APPLE_CERTIFICATE" | base64 --decode > certificate.p12
           
-          # Create a new keychain
           security create-keychain -p "$KEYCHAIN_PASSWORD" build.keychain
           security default-keychain -s build.keychain
           security unlock-keychain -p "$KEYCHAIN_PASSWORD" build.keychain
           
-          # Import the certificate into the keychain
           security import certificate.p12 -k build.keychain -P "$APPLE_CERTIFICATE_PASSWORD" -T /usr/bin/codesign
-          # Allow codesign to access the keychain
           security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$KEYCHAIN_PASSWORD" build.keychain
           
-          # Verify the import
           security find-identity -v -p codesigning build.keychain
     
       - name: List Certificates in Keychain
