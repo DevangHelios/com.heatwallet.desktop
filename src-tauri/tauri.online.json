@@ -39,7 +39,6 @@
     },
     "macOS": {
       "entitlements": "./entitlements.plist",
-      "notarize": true,
       "signingIdentity": null
     },
     "icon": [
