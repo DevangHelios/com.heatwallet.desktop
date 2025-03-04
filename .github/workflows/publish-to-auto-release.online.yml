@@ -79,7 +79,12 @@ jobs:
           else
             sed -i "s/__VERSION_REPLACE_THIS__/${{ env.VERSION }}/g" src-tauri/tauri.conf.json
           fi
-    
+      - name: List Certificates in Keychain
+        if: matrix.platform == 'macos-latest'
+        run: |
+          echo "Available identities in build.keychain:"
+          security find-identity -v -p codesigning build.keychain
+
       - uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
