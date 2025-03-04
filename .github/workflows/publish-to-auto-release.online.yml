@@ -98,10 +98,23 @@ jobs:
       - name: Verify Certificate
         if: matrix.platform == 'macos-latest'
         run: |
-          CERT_INFO=$(security find-identity -v -p codesigning build.keychain | grep "Apple Development")
-          CERT_ID=$(echo "$CERT_INFO" | awk -F'"' '{print $2}')
+          echo "Listing keychains..."
+          security list-keychains
+
+          echo "Checking identities in build.keychain..."
+          security find-identity -v -p codesigning build.keychain || { echo "No identities found."; exit 1; }
+
+          echo "Extracting Apple Development certificate..."
+          CERT_INFO=$(security find-identity -v -p codesigning build.keychain | grep "Apple Development" || true)
+          if [ -z "$CERT_INFO" ]; then
+            echo "Error: No 'Apple Development' certificate found in build.keychain."
+            exit 1
+          fi
+
+
+          CERT_ID=$(echo "$CERT_INFO" | awk '{print $2}')
           echo "CERT_ID=$CERT_ID" >> $GITHUB_ENV
-          echo "Certificate imported."
+          echo "Certificate imported and verified: $CERT_ID"
     
       - uses: tauri-apps/tauri-action@v0
         env:
