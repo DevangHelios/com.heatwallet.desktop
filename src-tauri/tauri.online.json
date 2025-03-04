@@ -39,7 +39,7 @@
     },
     "macOS": {
       "entitlements": "./entitlements.plist",
-      "signingIdentity": "$APPLE_CERTIFICATE_NAME"
+      "signingIdentity": null
     },
     "icon": [
       "icons/16x16.png",
