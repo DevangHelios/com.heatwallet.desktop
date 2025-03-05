@@ -116,16 +116,17 @@ jobs:
             CERT_INFO=$(security find-identity -v -p codesigning build.keychain | head -n 1)
           fi
           
-          # Extract the certificate ID
+          # Extract the full certificate name, not just the ID
           if [[ -n "$CERT_INFO" ]]; then
-            CERT_ID=$(echo "$CERT_INFO" | sed -n 's/.*\([0-9A-F]\{40\}\).*/\1/p')
-            echo "Found certificate ID: $CERT_ID"
+            # Find the certificate common name in quotes
+            CERT_ID=$(echo "$CERT_INFO" | sed -n 's/.*\("[^"]*"\).*/\1/p' | tr -d '"')
+            echo "Found certificate: $CERT_ID"
             echo "CERT_ID=$CERT_ID" >> $GITHUB_ENV
           else
             echo "No codesigning certificates found in keychain."
             exit 1
           fi
-                
+
       - uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
