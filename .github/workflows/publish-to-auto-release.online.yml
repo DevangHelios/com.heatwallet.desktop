@@ -107,14 +107,17 @@ jobs:
       - name: Verify Certificate
         if: matrix.platform == 'macos-latest'
         run: |
-          # List all codesigning identities to help with debugging
-          echo "Available codesigning identities:"
-          security find-identity -v -p codesigning build.keychain
+          # Try to find Developer ID Application certificate first
+          CERT_INFO=$(security find-identity -v -p codesigning build.keychain | grep "Developer ID Application" || echo "")
           
-          # Get the first codesigning identity without filtering by name
-          CERT_INFO=$(security find-identity -v -p codesigning build.keychain | head -n 1)
+          # If not found, get the first available certificate
+          if [[ -z "$CERT_INFO" ]]; then
+            echo "No Developer ID Application certificate found, using first available certificate"
+            CERT_INFO=$(security find-identity -v -p codesigning build.keychain | head -n 1)
+          fi
+          
+          # Extract the certificate ID
           if [[ -n "$CERT_INFO" ]]; then
-            # Extract the certificate ID - this handles different certificate name formats
             CERT_ID=$(echo "$CERT_INFO" | sed -n 's/.*\([0-9A-F]\{40\}\).*/\1/p')
             echo "Found certificate ID: $CERT_ID"
             echo "CERT_ID=$CERT_ID" >> $GITHUB_ENV
@@ -122,7 +125,7 @@ jobs:
             echo "No codesigning certificates found in keychain."
             exit 1
           fi
-        
+                
       - uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
