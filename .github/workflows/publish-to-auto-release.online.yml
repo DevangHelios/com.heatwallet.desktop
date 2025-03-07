@@ -136,6 +136,8 @@ jobs:
           APPLE_API_ISSUER: ${{ secrets.APPLE_API_ISSUER }}
           APPLE_API_KEY: ${{ secrets.APPLE_API_KEY }}
           APPLE_API_KEY_PATH: ${{ env.APPLE_API_KEY_PATH }}
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
         with:
           tagName: "app-v${{ env.VERSION }}-build-${{ env.BUILD_NUMBER }}"
           releaseName: "App v${{ env.VERSION }} (Build ${{ env.BUILD_NUMBER }})"
