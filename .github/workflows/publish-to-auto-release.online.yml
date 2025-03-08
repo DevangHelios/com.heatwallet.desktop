@@ -145,3 +145,24 @@ jobs:
           releaseDraft: true
           prerelease: false
           args: ${{ matrix.args }}
+
+      - name: Notarize DMG (macOS)
+        if: matrix.platform == 'macos-latest'
+        env:
+          APPLE_API_KEY: ${{ secrets.APPLE_API_KEY }}
+          APPLE_API_ISSUER: ${{ secrets.APPLE_API_ISSUER }}
+          APPLE_API_KEY_PATH: ${{ env.APPLE_API_KEY_PATH }}
+        run: |
+          DMG_PATH=$(find src-tauri/target -name "*.dmg" | head -n 1)
+          xcrun notarytool submit "$DMG_PATH" \
+            --key "$APPLE_API_KEY_PATH" \
+            --issuer "$APPLE_API_ISSUER" \
+            --key-id "$APPLE_API_KEY" \
+            --wait
+        
+      - name: Staple notarization to DMG (macOS)
+        if: matrix.platform == 'macos-latest'
+        run: |
+          DMG_PATH=$(find src-tauri/target -name "*.dmg" | head -n 1)
+          xcrun stapler staple "$DMG_PATH"
+        
