@@ -38,8 +38,7 @@
       }
     },
     "macOS": {
-      "entitlements": "./entitlements.plist",
-      "signingIdentity": null
+      "entitlements": "./entitlements.plist"
     },
     "icon": [
       "icons/16x16.png",
