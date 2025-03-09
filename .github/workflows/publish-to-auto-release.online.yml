@@ -133,11 +133,11 @@ jobs:
           APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
           APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
           APPLE_SIGNING_IDENTITY: ${{ env.CERT_ID }}
-          # APPLE_API_ISSUER: ${{ secrets.APPLE_API_ISSUER }}
-          # APPLE_API_KEY: ${{ secrets.APPLE_API_KEY }}
-          # APPLE_API_KEY_PATH: ${{ env.APPLE_API_KEY_PATH }}
+          APPLE_API_ISSUER: ${{ secrets.APPLE_API_ISSUER }}
+          APPLE_API_KEY: ${{ secrets.APPLE_API_KEY }}
+          APPLE_API_KEY_PATH: ${{ env.APPLE_API_KEY_PATH }}
           APPLE_ID: ${{ secrets.APPLE_ID }}
-          APPLE_PASSWORD: ${{ secrets.APPLE_PASSWORD }}
+          # APPLE_PASSWORD: ${{ secrets.APPLE_PASSWORD }}
           APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
         with:
           tagName: "app-v${{ env.VERSION }}-build-${{ env.BUILD_NUMBER }}"
@@ -147,23 +147,28 @@ jobs:
           prerelease: false
           args: ${{ matrix.args }}
 
-      # - name: Notarize DMG (macOS)
-      #   if: matrix.platform == 'macos-latest'
-      #   env:
-      #     APPLE_API_KEY: ${{ secrets.APPLE_API_KEY }}
-      #     APPLE_API_ISSUER: ${{ secrets.APPLE_API_ISSUER }}
-      #     APPLE_API_KEY_PATH: ${{ env.APPLE_API_KEY_PATH }}
-      #   run: |
-      #     DMG_PATH=$(find src-tauri/target -name "*.dmg" | head -n 1)
-      #     xcrun notarytool submit "$DMG_PATH" \
-      #       --key "$APPLE_API_KEY_PATH" \
-      #       --issuer "$APPLE_API_ISSUER" \
-      #       --key-id "$APPLE_API_KEY" \
-      #       --wait
-        
-      # - name: Staple notarization to DMG (macOS)
-      #   if: matrix.platform == 'macos-latest'
-      #   run: |
-      #     DMG_PATH=$(find src-tauri/target -name "*.dmg" | head -n 1)
-      #     xcrun stapler staple "$DMG_PATH"
-        
+      - name: Notarize DMG
+        env:
+          APPLE_API_KEY: ${{ secrets.APPLE_API_KEY }}
+          APPLE_API_ISSUER: ${{ secrets.APPLE_API_ISSUER }}
+          APPLE_API_KEY_PATH: ${{ secrets.APPLE_API_KEY_PATH }}
+        run: |
+          DMG_PATH=$(find src-tauri/target -name "*.dmg" | head -n 1)
+          echo "Notarizing $DMG_PATH"
+          xcrun notarytool submit "$DMG_PATH" \
+            --key "$APPLE_API_KEY_PATH" \
+            --issuer "$APPLE_API_ISSUER" \
+            --key-id "$APPLE_API_KEY" \
+            --wait
+  
+      - name: Staple Notarization to DMG
+        run: |
+          DMG_PATH=$(find src-tauri/target -name "*.dmg" | head -n 1)
+          xcrun stapler staple "$DMG_PATH"
+  
+      - name: Upload Notarized DMG to GitHub Release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          DMG_PATH=$(find src-tauri/target -name "*.dmg" | head -n 1)
+          gh release upload "v${{ github.ref_name }}" "$DMG_PATH" --clobber
