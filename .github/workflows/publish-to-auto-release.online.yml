@@ -188,11 +188,12 @@ jobs:
           DMG_PATH=$(find src-tauri/target -name "*.dmg" | head -n 1)
           xcrun stapler staple "$DMG_PATH"
   
-      - name: Upload Notarized DMG to GitHub Release
+      - name: Upload Notarized DMG to Existing GitHub Release
         if: matrix.platform == 'macos-latest'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           DMG_PATH=$(find src-tauri/target -name "*.dmg" | head -n 1)
-          gh release upload "v${{ github.ref_name }}" "$DMG_PATH" --clobber      
-        
+          TAG_NAME="app-v${{ env.VERSION }}-build-${{ env.BUILD_NUMBER }}"
+          echo "Uploading $DMG_PATH to release $TAG_NAME"
+          gh release upload "$TAG_NAME" "$DMG_PATH" --clobber 
