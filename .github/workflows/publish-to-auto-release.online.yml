@@ -17,9 +17,9 @@ jobs:
       matrix:
         include:
           - platform: "macos-latest" # for Arm based macs (M1 and above).
-            args: "--notarize --verbose --target aarch64-apple-darwin"
+            args: "--verbose --target aarch64-apple-darwin"
           - platform: "macos-latest" # for Intel based macs.
-            args: "--notarize --verbose --target x86_64-apple-darwin"
+            args: "--verbose --target x86_64-apple-darwin"
           - platform: "ubuntu-22.04" # for Tauri v1 you could replace this with ubuntu-20.04.
             args: ""
           - platform: "windows-latest"
@@ -136,9 +136,9 @@ jobs:
           APPLE_API_ISSUER: ${{ secrets.APPLE_API_ISSUER }}
           APPLE_API_KEY: ${{ secrets.APPLE_API_KEY }}
           APPLE_API_KEY_PATH: ${{ env.APPLE_API_KEY_PATH }}
-          APPLE_ID: ${{ secrets.APPLE_ID }}
+          # APPLE_ID: ${{ secrets.APPLE_ID }}
           # APPLE_PASSWORD: ${{ secrets.APPLE_PASSWORD }}
-          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          # APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
         with:
           tagName: "app-v${{ env.VERSION }}-build-${{ env.BUILD_NUMBER }}"
           releaseName: "App v${{ env.VERSION }} (Build ${{ env.BUILD_NUMBER }})"
