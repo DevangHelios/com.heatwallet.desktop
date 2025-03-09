@@ -17,9 +17,9 @@ jobs:
       matrix:
         include:
           - platform: "macos-latest" # for Arm based macs (M1 and above).
-            args: "--verbose --target aarch64-apple-darwin"
+            args: "--notarize --verbose --target aarch64-apple-darwin"
           - platform: "macos-latest" # for Intel based macs.
-            args: "--verbose --target x86_64-apple-darwin"
+            args: "--notarize --verbose --target x86_64-apple-darwin"
           - platform: "ubuntu-22.04" # for Tauri v1 you could replace this with ubuntu-20.04.
             args: ""
           - platform: "windows-latest"
@@ -80,14 +80,14 @@ jobs:
             sed -i "s/__VERSION_REPLACE_THIS__/${{ env.VERSION }}/g" src-tauri/tauri.conf.json
           fi
 
-      # # Step for macOS notarization setup
-      # - name: Setup Notarization Credentials
-      #   if: matrix.platform == 'macos-latest'
-      #   run: |
-      #     # Create private key file from secret
-      #     mkdir -p $HOME/private_keys
-      #     echo "${{ secrets.APPLE_API_KEY_CONTENT }}" > $HOME/private_keys/AuthKey_${{ secrets.APPLE_API_KEY }}.p8
-      #     echo "APPLE_API_KEY_PATH=$HOME/private_keys/AuthKey_${{ secrets.APPLE_API_KEY }}.p8" >> $GITHUB_ENV
+      # Step for macOS notarization setup
+      - name: Setup Notarization Credentials
+        if: matrix.platform == 'macos-latest'
+        run: |
+          # Create private key file from secret
+          mkdir -p $HOME/private_keys
+          echo "${{ secrets.APPLE_API_KEY_CONTENT }}" > $HOME/private_keys/AuthKey_${{ secrets.APPLE_API_KEY }}.p8
+          echo "APPLE_API_KEY_PATH=$HOME/private_keys/AuthKey_${{ secrets.APPLE_API_KEY }}.p8" >> $GITHUB_ENV
 
       - name: Import Apple Developer Certificate
         if: matrix.platform == 'macos-latest'
@@ -147,11 +147,32 @@ jobs:
           prerelease: false
           args: ${{ matrix.args }}
 
+      # - name: Notarize DMG (macOS)
+      #   if: matrix.platform == 'macos-latest'
+      #   env:
+      #     APPLE_API_KEY: ${{ secrets.APPLE_API_KEY }}
+      #     APPLE_API_ISSUER: ${{ secrets.APPLE_API_ISSUER }}
+      #     APPLE_API_KEY_PATH: ${{ env.APPLE_API_KEY_PATH }}
+      #   run: |
+      #     DMG_PATH=$(find src-tauri/target -name "*.dmg" | head -n 1)
+      #     xcrun notarytool submit "$DMG_PATH" \
+      #       --key "$APPLE_API_KEY_PATH" \
+      #       --issuer "$APPLE_API_ISSUER" \
+      #       --key-id "$APPLE_API_KEY" \
+      #       --wait
+        
+      # - name: Staple notarization to DMG (macOS)
+      #   if: matrix.platform == 'macos-latest'
+      #   run: |
+      #     DMG_PATH=$(find src-tauri/target -name "*.dmg" | head -n 1)
+      #     xcrun stapler staple "$DMG_PATH"
+
       - name: Notarize DMG
+        if: matrix.platform == 'macos-latest'
         env:
           APPLE_API_KEY: ${{ secrets.APPLE_API_KEY }}
           APPLE_API_ISSUER: ${{ secrets.APPLE_API_ISSUER }}
-          APPLE_API_KEY_PATH: ${{ secrets.APPLE_API_KEY_PATH }}
+          APPLE_API_KEY_PATH: ${{ env.APPLE_API_KEY_PATH }}
         run: |
           DMG_PATH=$(find src-tauri/target -name "*.dmg" | head -n 1)
           echo "Notarizing $DMG_PATH"
@@ -162,13 +183,16 @@ jobs:
             --wait
   
       - name: Staple Notarization to DMG
+        if: matrix.platform == 'macos-latest'
         run: |
           DMG_PATH=$(find src-tauri/target -name "*.dmg" | head -n 1)
           xcrun stapler staple "$DMG_PATH"
   
       - name: Upload Notarized DMG to GitHub Release
+        if: matrix.platform == 'macos-latest'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           DMG_PATH=$(find src-tauri/target -name "*.dmg" | head -n 1)
-          gh release upload "v${{ github.ref_name }}" "$DMG_PATH" --clobber
+          gh release upload "v${{ github.ref_name }}" "$DMG_PATH" --clobber      
+        
