@@ -147,25 +147,32 @@ jobs:
           prerelease: false
           args: ${{ matrix.args }}
 
+      - name: Set APP and DMG Paths
+        if: matrix.platform == 'macos-latest'
+        run: |
+          ARCH="${{ contains(matrix.args, 'aarch64') && 'aarch64-apple-darwin' || 'x86_64-apple-darwin' }}"
+          APP_PATH=$(find "src-tauri/target/$ARCH/release/bundle/macos" -name "*.app" | head -n 1)
+          DMG_PATH=$(find "src-tauri/target/$ARCH/release/bundle/dmg" -name "*.dmg" | head -n 1)
+          if [ -z "$APP_PATH" ]; then
+            echo "No .app bundle found for architecture $ARCH!"
+            exit 1
+          fi
+          if [ -z "$DMG_PATH" ]; then
+            echo "No .dmg file found for architecture $ARCH!"
+            exit 1
+          fi
+          echo "APP_PATH=$APP_PATH" >> $GITHUB_ENV
+          echo "DMG_PATH=$DMG_PATH" >> $GITHUB_ENV
+
       - name: Explicitly sign WASM files
         if: matrix.platform == 'macos-latest'      
         run: |
-          APP_PATH=$(find src-tauri/target -name "*.app" | head -n 1)
-          if [ -z "$APP_PATH" ]; then
-            echo "No .app bundle found!"
-            exit 1
-          fi
-          find "$APP_PATH" -name "*.wasm" -exec codesign --force --options runtime --timestamp --sign "${{ env.CERT_ID }}" {} \;
+          find "${{ env.APP_PATH }}" -name "*.wasm" -exec codesign --force --options runtime --timestamp --sign "${{ env.CERT_ID }}" {} \;
         
       - name: Re-sign the app bundle
         if: matrix.platform == 'macos-latest'      
         run: |
-          APP_PATH=$(find src-tauri/target -name "*.app" | head -n 1)
-          if [ -z "$APP_PATH" ]; then
-            echo "No .app bundle found!"
-            exit 1
-          fi
-          codesign --force --deep --options runtime --timestamp --sign "${{ env.CERT_ID }}" "$APP_PATH"
+          codesign --force --deep --options runtime --timestamp --sign "${{ env.CERT_ID }}" "${{ env.APP_PATH }}"
 
       - name: Notarize DMG
         if: matrix.platform == 'macos-latest'
@@ -174,9 +181,8 @@ jobs:
           APPLE_API_ISSUER: ${{ secrets.APPLE_API_ISSUER }}
           APPLE_API_KEY_PATH: ${{ env.APPLE_API_KEY_PATH }}
         run: |
-          DMG_PATH=$(find src-tauri/target -name "*.dmg" | head -n 1)
-          echo "Notarizing $DMG_PATH"
-          xcrun notarytool submit "$DMG_PATH" \
+          echo "Notarizing ${{ env.DMG_PATH }}"
+          xcrun notarytool submit "${{ env.DMG_PATH }}" \
             --key "$APPLE_API_KEY_PATH" \
             --issuer "$APPLE_API_ISSUER" \
             --key-id "$APPLE_API_KEY" \
@@ -185,15 +191,13 @@ jobs:
       - name: Staple Notarization to DMG
         if: matrix.platform == 'macos-latest'
         run: |
-          DMG_PATH=$(find src-tauri/target -name "*.dmg" | head -n 1)
-          xcrun stapler staple "$DMG_PATH"
+          xcrun stapler staple "${{ env.DMG_PATH }}"
   
       - name: Upload Notarized DMG to Existing GitHub Release
         if: matrix.platform == 'macos-latest'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          DMG_PATH=$(find src-tauri/target -name "*.dmg" | head -n 1)
           TAG_NAME="app-v${{ env.VERSION }}-build-${{ env.BUILD_NUMBER }}"
-          echo "Uploading $DMG_PATH to release $TAG_NAME"
-          gh release upload "$TAG_NAME" "$DMG_PATH" --clobber 
+          echo "Uploading ${{ env.DMG_PATH }} to release $TAG_NAME"
+          gh release upload "$TAG_NAME" "${{ env.DMG_PATH }}" --clobber 
