@@ -27,7 +27,6 @@
       "rpm",
       "appimage",
       "msi",
-      "dmg",
       "app"
     ],
     "resources": [
