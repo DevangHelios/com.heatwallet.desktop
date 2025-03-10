@@ -153,6 +153,8 @@ jobs:
           ARCH="${{ contains(matrix.args, 'aarch64') && 'aarch64-apple-darwin' || 'x86_64-apple-darwin' }}"
           APP_PATH=$(find "src-tauri/target/$ARCH/release/bundle/macos" -name "*.app" | head -n 1)
           DMG_PATH=$(find "src-tauri/target/$ARCH/release/bundle/dmg" -name "*.dmg" | head -n 1)
+          echo "Found APP_PATH: $APP_PATH"
+          echo "Found DMG_PATH: $DMG_PATH"
           if [ -z "$APP_PATH" ]; then
             echo "No .app bundle found for architecture $ARCH!"
             exit 1
@@ -165,14 +167,38 @@ jobs:
           echo "DMG_PATH=$DMG_PATH" >> $GITHUB_ENV
 
       - name: Explicitly sign WASM files
-        if: matrix.platform == 'macos-latest'      
+        if: matrix.platform == 'macos-latest'
         run: |
-          find "${{ env.APP_PATH }}" -name "*.wasm" -exec codesign --force --options runtime --timestamp --sign "${{ env.CERT_ID }}" {} \;
+          echo "Searching for .wasm files under ${{ env.APP_PATH }}/Contents:"
+          WASM_FILES=$(find "${{ env.APP_PATH }}/Contents" -type f -name "*.wasm")
+          if [ -z "$WASM_FILES" ]; then
+            echo "No .wasm files found."
+          else
+            echo "Found the following .wasm files:"
+            echo "$WASM_FILES"
+            while IFS= read -r wasm_file; do
+              echo "Signing $wasm_file"
+              codesign --force --options runtime --timestamp --sign "${{ env.CERT_ID }}" "$wasm_file"
+              if [ $? -eq 0 ]; then
+                echo "✅ Successfully signed: $wasm_file"
+              else
+                echo "❌ Failed to sign: $wasm_file"
+                exit 1
+              fi
+            done <<< "$WASM_FILES"
+          fi
         
       - name: Re-sign the app bundle
-        if: matrix.platform == 'macos-latest'      
+        if: matrix.platform == 'macos-latest'
         run: |
+          echo "Re-signing entire app bundle: ${{ env.APP_PATH }}"
           codesign --force --deep --options runtime --timestamp --sign "${{ env.CERT_ID }}" "${{ env.APP_PATH }}"
+          if [ $? -eq 0 ]; then
+            echo "✅ Successfully re-signed the app bundle"
+          else
+            echo "❌ Failed to re-sign the app bundle"
+            exit 1
+          fi
 
       - name: Notarize DMG
         if: matrix.platform == 'macos-latest'
