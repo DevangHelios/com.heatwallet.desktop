@@ -27,7 +27,8 @@
       "rpm",
       "appimage",
       "msi",
-      "dmg"
+      "dmg",
+      "app"
     ],
     "resources": [
       "web-dist/**/*"
