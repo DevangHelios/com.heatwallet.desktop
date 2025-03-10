@@ -147,25 +147,17 @@ jobs:
           prerelease: false
           args: ${{ matrix.args }}
 
-      # - name: Notarize DMG (macOS)
-      #   if: matrix.platform == 'macos-latest'
-      #   env:
-      #     APPLE_API_KEY: ${{ secrets.APPLE_API_KEY }}
-      #     APPLE_API_ISSUER: ${{ secrets.APPLE_API_ISSUER }}
-      #     APPLE_API_KEY_PATH: ${{ env.APPLE_API_KEY_PATH }}
-      #   run: |
-      #     DMG_PATH=$(find src-tauri/target -name "*.dmg" | head -n 1)
-      #     xcrun notarytool submit "$DMG_PATH" \
-      #       --key "$APPLE_API_KEY_PATH" \
-      #       --issuer "$APPLE_API_ISSUER" \
-      #       --key-id "$APPLE_API_KEY" \
-      #       --wait
-        
-      # - name: Staple notarization to DMG (macOS)
-      #   if: matrix.platform == 'macos-latest'
-      #   run: |
-      #     DMG_PATH=$(find src-tauri/target -name "*.dmg" | head -n 1)
-      #     xcrun stapler staple "$DMG_PATH"
+      - name: Explicitly sign WASM files
+        if: matrix.platform == 'macos-latest'      
+        run: |
+          APP_PATH=$(find src-tauri/target/release/bundle/macos -name "*.app" | head -n 1)
+          find "$APP_PATH" -name "*.wasm" -exec codesign --force --options runtime --timestamp --sign "${{ secrets.APPLE_CERTIFICATE_IDENTITY }}" {} \;
+  
+      - name: Re-sign the app bundle
+        if: matrix.platform == 'macos-latest'      
+        run: |
+          APP_PATH=$(find src-tauri/target/release/bundle/macos -name "*.app" | head -n 1)
+          codesign --force --deep --options runtime --timestamp --sign "${{ secrets.APPLE_CERTIFICATE_IDENTITY }}" "$APP_PATH"
 
       - name: Notarize DMG
         if: matrix.platform == 'macos-latest'
