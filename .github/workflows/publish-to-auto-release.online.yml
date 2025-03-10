@@ -150,14 +150,22 @@ jobs:
       - name: Explicitly sign WASM files
         if: matrix.platform == 'macos-latest'      
         run: |
-          APP_PATH=$(find src-tauri/target/release/bundle/macos -name "*.app" | head -n 1)
-          find "$APP_PATH" -name "*.wasm" -exec codesign --force --options runtime --timestamp --sign "${{ secrets.APPLE_CERTIFICATE_IDENTITY }}" {} \;
-  
+          APP_PATH=$(find src-tauri/target -name "*.app" | head -n 1)
+          if [ -z "$APP_PATH" ]; then
+            echo "No .app bundle found!"
+            exit 1
+          fi
+          find "$APP_PATH" -name "*.wasm" -exec codesign --force --options runtime --timestamp --sign "${{ env.CERT_ID }}" {} \;
+        
       - name: Re-sign the app bundle
         if: matrix.platform == 'macos-latest'      
         run: |
-          APP_PATH=$(find src-tauri/target/release/bundle/macos -name "*.app" | head -n 1)
-          codesign --force --deep --options runtime --timestamp --sign "${{ secrets.APPLE_CERTIFICATE_IDENTITY }}" "$APP_PATH"
+          APP_PATH=$(find src-tauri/target -name "*.app" | head -n 1)
+          if [ -z "$APP_PATH" ]; then
+            echo "No .app bundle found!"
+            exit 1
+          fi
+          codesign --force --deep --options runtime --timestamp --sign "${{ env.CERT_ID }}" "$APP_PATH"
 
       - name: Notarize DMG
         if: matrix.platform == 'macos-latest'
