@@ -185,10 +185,21 @@ jobs:
         if: matrix.platform == 'macos-latest'
         run: |
           ARCH="${{ contains(matrix.args, 'aarch64') && 'aarch64-apple-darwin' || 'x86_64-apple-darwin' }}"
-          DMG_NAME="Heat Wallet_v${{ env.VERSION }}_build${{ env.BUILD_NUMBER }}_${ARCH}.dmg"
-          hdiutil create -volname "Heat Wallet" -srcfolder "${{ env.APP_PATH }}" -ov -format UDZO "$DMG_NAME"
+          DMG_NAME="Heat Wallet_v${{ env.VERSION }}_${ARCH}.dmg"
+          # Create a temporary folder to structure the DMG
+          TEMP_DMG_FOLDER="HeatWalletDMG"
+          mkdir -p "$TEMP_DMG_FOLDER"
+          # Copy the app bundle into the DMG structure
+          cp -R "${{ env.APP_PATH }}" "$TEMP_DMG_FOLDER/"
+          # Create an alias to /Applications for drag & drop install
+          ln -s /Applications "$TEMP_DMG_FOLDER/Applications"
+          # Generate the DMG with proper layout
+          hdiutil create -volname "Heat Wallet" -srcfolder "$TEMP_DMG_FOLDER" -ov -format UDZO "$DMG_NAME"
+          # Clean up temp folder
+          rm -rf "$TEMP_DMG_FOLDER"
+          # Set DMG path as an environment variable for later steps
           echo "DMG_PATH=$DMG_NAME" >> $GITHUB_ENV
-        
+
       - name: Sign the DMG
         if: matrix.platform == 'macos-latest'
         run: |
