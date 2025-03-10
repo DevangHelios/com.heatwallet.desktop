@@ -152,52 +152,49 @@ jobs:
         run: |
           ARCH="${{ contains(matrix.args, 'aarch64') && 'aarch64-apple-darwin' || 'x86_64-apple-darwin' }}"
           APP_PATH=$(find src-tauri/target/$ARCH/release/bundle/macos -name '*.app' | head -n 1)
-          if [ -z \"$APP_PATH\" ]; then
-            echo \"Error: Could not find .app!\"
+          if [ -z "$APP_PATH" ]; then
+            echo "Error: Could not find .app!"
             exit 1
           fi
-          echo \"APP_PATH=$APP_PATH\" >> $GITHUB_ENV
+          echo "APP_PATH=$APP_PATH" >> $GITHUB_ENV
 
       - name: Sign WASM files
         if: matrix.platform == 'macos-latest'
         run: |
-          echo \"Looking for .wasm inside ${{ env.APP_PATH }}/Contents...\"
-          WASM_FILES=$(find \"${{ env.APP_PATH }}/Contents\" -name '*.wasm' -type f)
-          if [ -z \"$WASM_FILES\" ]; then
-            echo \"No .wasm files found.\"
+          echo "Looking for .wasm inside ${{ env.APP_PATH }}/Contents..."
+          WASM_FILES=$(find "${{ env.APP_PATH }}/Contents" -name '*.wasm' -type f)
+          if [ -z "$WASM_FILES" ]; then
+            echo "No .wasm files found."
           else
-            echo \"Found .wasm:\"
-            echo \"$WASM_FILES\"
+            echo "Found .wasm:"
+            echo "$WASM_FILES"
             while IFS= read -r wasm; do
-              echo \"Signing $wasm...\"
-              codesign --force --options runtime --timestamp \\
-                --sign \"${{ env.CERT_ID }}\" \"$wasm\"
-            done <<< \"$WASM_FILES\"
+              echo "Signing $wasm..."
+              codesign --force --options runtime --timestamp --sign "${{ env.CERT_ID }}" "$wasm"
+            done <<< "$WASM_FILES"
           fi
         
       - name: Re-sign .app
         if: matrix.platform == 'macos-latest'
         run: |
-          echo \"Re-signing the entire .app...\"
-          codesign --force --deep --options runtime --timestamp \\
-            --sign \"${{ env.CERT_ID }}\" \"${{ env.APP_PATH }}\"
-          codesign --verify --deep --verbose=2 \"${{ env.APP_PATH }}\"
+          echo "Re-signing the entire .app..."
+          codesign --force --deep --options runtime --timestamp --sign "${{ env.CERT_ID }}" "${{ env.APP_PATH }}"
+          codesign --verify --deep --verbose=2 "${{ env.APP_PATH }}"
 
       - name: Create DMG from Updated .app
         if: matrix.platform == 'macos-latest'
         run: |
           ARCH="${{ contains(matrix.args, 'aarch64') && 'aarch64-apple-darwin' || 'x86_64-apple-darwin' }}"
           DMG_NAME="Heat Wallet_v${{ env.VERSION }}_build${{ env.BUILD_NUMBER }}_${ARCH}.dmg"
-          hdiutil create -volname \"Heat Wallet\" -srcfolder \"${{ env.APP_PATH }}\" \\
-            -ov -format UDZO \"$DMG_NAME\"
-          echo \"DMG_PATH=$DMG_NAME\" >> $GITHUB_ENV
+          hdiutil create -volname "Heat Wallet" -srcfolder "${{ env.APP_PATH }}" -ov -format UDZO "$DMG_NAME"
+          echo "DMG_PATH=$DMG_NAME" >> $GITHUB_ENV
         
       - name: Sign the DMG
         if: matrix.platform == 'macos-latest'
         run: |
-          echo \"Signing ${{ env.DMG_PATH }}...\"
-          codesign --force --timestamp --sign \"${{ env.CERT_ID }}\" \"${{ env.DMG_PATH }}\"
-          codesign --verify --verbose=2 \"${{ env.DMG_PATH }}\"
+          echo "Signing ${{ env.DMG_PATH }}..."
+          codesign --force --timestamp --sign "${{ env.CERT_ID }}" "${{ env.DMG_PATH }}"
+          codesign --verify --verbose=2 "${{ env.DMG_PATH }}"
 
       - name: Notarize DMG
         if: matrix.platform == 'macos-latest'
@@ -206,25 +203,25 @@ jobs:
           APPLE_API_ISSUER: ${{ secrets.APPLE_API_ISSUER }}
           APPLE_API_KEY_PATH: ${{ env.APPLE_API_KEY_PATH }}
         run: |
-          echo \"Submitting for notarization: ${{ env.DMG_PATH }}\"
-          xcrun notarytool submit \"${{ env.DMG_PATH }}\" \\
-            --key \"$APPLE_API_KEY_PATH\" \\
-            --issuer \"$APPLE_API_ISSUER\" \\
-            --key-id \"$APPLE_API_KEY\" \\
+          echo "Submitting for notarization: ${{ env.DMG_PATH }}"
+          xcrun notarytool submit "${{ env.DMG_PATH }}" \
+            --key "$APPLE_API_KEY_PATH" \
+            --issuer "$APPLE_API_ISSUER" \
+            --key-id "$APPLE_API_KEY" \
             --wait
         
       - name: Staple Notarization
         if: matrix.platform == 'macos-latest'
         run: |
-          echo \"Stapling ${{ env.DMG_PATH }}...\"
-          xcrun stapler staple \"${{ env.DMG_PATH }}\"
-          xcrun stapler validate \"${{ env.DMG_PATH }}\"
+          echo "Stapling ${{ env.DMG_PATH }}..."
+          xcrun stapler staple "${{ env.DMG_PATH }}"
+          xcrun stapler validate "${{ env.DMG_PATH }}"
   
       - name: Upload Notarized DMG to Existing GitHub Release
         if: matrix.platform == 'macos-latest'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          TAG_NAME=\"app-v${{ env.VERSION }}-build-${{ env.BUILD_NUMBER }}\"
-          echo \"Uploading ${{ env.DMG_PATH }} to release $TAG_NAME...\"
-          gh release upload \"$TAG_NAME\" \"${{ env.DMG_PATH }}\" --clobber
+          TAG_NAME="app-v${{ env.VERSION }}-build-${{ env.BUILD_NUMBER }}"
+          echo "Uploading ${{ env.DMG_PATH }} to release $TAG_NAME..."
+          gh release upload "$TAG_NAME" "${{ env.DMG_PATH }}" --clobber
